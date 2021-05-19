@@ -5,20 +5,37 @@ export default class AlunosController {
   public async index({}: HttpContextContract) {
     const alunos = await Aluno.all()
 
-    return alunos
+    return alunos.map((aluno) => {
+      return {
+        id: aluno.id,
+        nome: aluno.nome,
+        email: aluno.email,
+        matricula: aluno.matricula,
+      }
+    })
   }
 
   public async store({ request }: HttpContextContract) {
     const data = request.only(['nome', 'email', 'matricula', 'nascimento'])
     const aluno = await Aluno.create(data)
 
-    return aluno
+    return {
+      id: aluno.id,
+      nome: aluno.nome,
+      email: aluno.email,
+      matricula: aluno.matricula,
+    }
   }
 
   public async show({ params }: HttpContextContract) {
     const aluno = await Aluno.findOrFail(params.id)
 
-    return aluno
+    return {
+      id: aluno.id,
+      nome: aluno.nome,
+      email: aluno.email,
+      matricula: aluno.matricula,
+    }
   }
 
   public async update({ request, params }: HttpContextContract) {
@@ -29,7 +46,12 @@ export default class AlunosController {
 
     await aluno.save()
 
-    return aluno
+    return {
+      id: aluno.id,
+      nome: aluno.nome,
+      email: aluno.email,
+      matricula: aluno.matricula,
+    }
   }
 
   public async destroy({ params }: HttpContextContract) {
