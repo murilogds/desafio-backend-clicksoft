@@ -39,4 +39,16 @@ export default class AlunosController {
 
     return { message: 'Aluno deletado com sucesso' }
   }
+
+  public async showClasses({ params }: HttpContextContract) {
+    const aluno = await Aluno.findOrFail(params.id)
+
+    const salas = await aluno.related('salas').query().preload('professor')
+    return {
+      aluno: aluno.nome,
+      salas: salas.map((sala) => {
+        return { sala: sala.numero_sala, professor: sala.professor.nome }
+      }),
+    }
+  }
 }

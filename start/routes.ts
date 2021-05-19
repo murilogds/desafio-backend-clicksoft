@@ -21,3 +21,8 @@ Route.post('/salas', 'SalasController.store')
 Route.get('/salas/:id', 'SalasController.show')
 Route.put('/salas/:id', 'SalasController.update')
 Route.delete('/salas/:id', 'SalasController.destroy')
+
+Route.post('/salas/:id/alocarAluno', 'SalasController.storeStudent')
+Route.delete('/salas/:id/deletarAluno', 'SalasController.deleteStudent')
+Route.get('/salas/:id/alunos', 'SalasController.showStudents')
+Route.get('/alunos/:id/salas', 'AlunosController.showClasses')
