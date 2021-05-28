@@ -32,7 +32,13 @@ export default class SalasController {
       'disponibilidade',
     ])
 
-    const professor = await Professor.findByOrFail('matricula', data.matricula_professor)
+    const professor = await Professor.findBy('matricula', data.matricula_professor)
+
+    if (!professor) {
+      throw new Error(
+        'Não existe professor com a matrícula fornecida, não foi possível cadastrar a sala.'
+      )
+    }
 
     const sala = await Sala.create({
       numero_sala: data.numero_sala,
@@ -60,54 +66,72 @@ export default class SalasController {
   }
 
   public async show({ params }: HttpContextContract) {
-    const sala = await Sala.findOrFail(params.id)
+    try {
+      const sala = await Sala.findOrFail(params.id)
 
-    await sala.preload('professor')
+      await sala.preload('professor')
 
-    return {
-      id: sala.id,
-      numero_sala: sala.numero_sala,
-      capacidade: sala.capacidade,
-      disponibilidade: sala.disponibilidade,
-      professor: {
-        id: sala.professor.id,
-        nome: sala.professor.nome,
-        matricula: sala.professor.matricula,
-        email: sala.professor.email,
-        nascimento: sala.professor.nascimento,
-      },
+      return {
+        id: sala.id,
+        numero_sala: sala.numero_sala,
+        capacidade: sala.capacidade,
+        disponibilidade: sala.disponibilidade,
+        professor: {
+          id: sala.professor.id,
+          nome: sala.professor.nome,
+          matricula: sala.professor.matricula,
+          email: sala.professor.email,
+          nascimento: sala.professor.nascimento,
+        },
+      }
+    } catch (error) {
+      throw new Error(
+        'Não foi possível encontrar a sala com o id fornecido, verifique se o id fornecido é válido'
+      )
     }
   }
 
   public async update({ request, params }: HttpContextContract) {
-    const sala = await Sala.findOrFail(params.id)
-    const data = request.only(['numero_sala', 'capacidade', 'disponibilidade'])
+    try {
+      const sala = await Sala.findOrFail(params.id)
+      const data = request.only(['numero_sala', 'capacidade', 'disponibilidade'])
 
-    sala.merge(data)
-    await sala.save()
+      sala.merge(data)
+      await sala.save()
 
-    await sala.preload('professor')
+      await sala.preload('professor')
 
-    return {
-      id: sala.id,
-      numero_sala: sala.numero_sala,
-      capacidade: sala.capacidade,
-      disponibilidade: sala.disponibilidade,
-      professor: {
-        id: sala.professor.id,
-        nome: sala.professor.nome,
-        matricula: sala.professor.matricula,
-        email: sala.professor.email,
-        nascimento: sala.professor.nascimento,
-      },
+      return {
+        id: sala.id,
+        numero_sala: sala.numero_sala,
+        capacidade: sala.capacidade,
+        disponibilidade: sala.disponibilidade,
+        professor: {
+          id: sala.professor.id,
+          nome: sala.professor.nome,
+          matricula: sala.professor.matricula,
+          email: sala.professor.email,
+          nascimento: sala.professor.nascimento,
+        },
+      }
+    } catch (error) {
+      throw new Error(
+        'Não foi possível atualizar a sala com o id fornecido, verifique se o id fornecido é válido'
+      )
     }
   }
 
   public async destroy({ params }: HttpContextContract) {
-    const sala = await Sala.findOrFail(params.id)
-    await sala.delete()
+    try {
+      const sala = await Sala.findOrFail(params.id)
+      await sala.delete()
 
-    return { message: 'Sala deletada com sucesso' }
+      return { message: 'Sala deletada com sucesso' }
+    } catch (error) {
+      throw new Error(
+        'Não foi possível deletar a sala com o id fornecido, verifique se o id fornecido é válido'
+      )
+    }
   }
 
   public async storeStudent({ request, params }: HttpContextContract) {
@@ -116,9 +140,17 @@ export default class SalasController {
       'matriculaAluno',
     ])
 
-    const sala = await Sala.findOrFail(params.id)
+    const sala = await Sala.find(params.id)
 
-    const aluno = await Aluno.findByOrFail('matricula', matriculaAluno)
+    if (!sala) {
+      throw new Error('Não existe nenhuma sala com o id fornecido')
+    }
+
+    const aluno = await Aluno.findBy('matricula', matriculaAluno)
+
+    if (!aluno) {
+      throw new Error('Não existe nenhum aluno com a matrícula fornecida')
+    }
 
     await sala.preload('alunos')
 
@@ -158,9 +190,17 @@ export default class SalasController {
       'matriculaAluno',
     ])
 
-    const sala = await Sala.findOrFail(params.id)
+    const sala = await Sala.find(params.id)
 
-    const aluno = await Aluno.findByOrFail('matricula', matriculaAluno)
+    if (!sala) {
+      throw new Error('Não existe nenhuma sala com o id fornecido')
+    }
+
+    const aluno = await Aluno.findBy('matricula', matriculaAluno)
+
+    if (!aluno) {
+      throw new Error('Não existe nenhum aluno com a matrícula fornecida')
+    }
 
     await sala.preload('alunos')
 
@@ -191,24 +231,30 @@ export default class SalasController {
   }
 
   public async showStudents({ params }: HttpContextContract) {
-    const sala = await Sala.findOrFail(params.id)
+    try {
+      const sala = await Sala.findOrFail(params.id)
 
-    await sala.preload('alunos')
+      await sala.preload('alunos')
 
-    return {
-      id: sala.id,
-      sala: sala.numero_sala,
-      capacidade: sala.capacidade,
-      disponibilidade: sala.disponibilidade,
-      alunos: sala.alunos.map((aluno) => {
-        return {
-          id: aluno.id,
-          nome: aluno.nome,
-          email: aluno.email,
-          matricula: aluno.matricula,
-          nascimento: aluno.nascimento,
-        }
-      }),
+      return {
+        id: sala.id,
+        sala: sala.numero_sala,
+        capacidade: sala.capacidade,
+        disponibilidade: sala.disponibilidade,
+        alunos: sala.alunos.map((aluno) => {
+          return {
+            id: aluno.id,
+            nome: aluno.nome,
+            email: aluno.email,
+            matricula: aluno.matricula,
+            nascimento: aluno.nascimento,
+          }
+        }),
+      }
+    } catch (error) {
+      throw new Error(
+        'Não foi possível encontrar a sala com o id fornecido, verifique se o id fornecido é válido'
+      )
     }
   }
 }
